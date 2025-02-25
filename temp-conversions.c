@@ -5,8 +5,11 @@
 #define UPPER 300
 #define STEP 20
 
+/* function prototype */
+float convert(float fahr);
+
 /* print fahrenheit to celsius table */
-main()
+int main(void)
 {
     float fahr, celsius;
 
@@ -14,8 +17,13 @@ main()
 
     fahr = UPPER;
     while (fahr >= LOWER) {
-        celsius = (5.0/9.0) * (fahr-32);
+        celsius = convert(fahr);
         printf("%3.0f %6.1f\n", fahr, celsius);
         fahr = fahr - STEP;
     }
+}
+
+float convert(float fahr)
+{
+    return (5.0/9.0) * (fahr-32);
 }
