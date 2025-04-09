@@ -6,40 +6,58 @@
 #include <ctype.h>
 #include <string.h>
 
-/* Data structures */
+// Data structures
+// C keywords
 struct key {
     char *word;
     int count;
 } keytab[] = {
+    { "auto", 0 },
     { "break", 0 },
     { "case", 0 },
     { "char", 0 },
+    { "const", 0 },
     { "continue", 0 },
+    { "default", 0 },
     { "do", 0 },
+    { "double", 0 },
     { "else", 0 },
+    { "enum", 0 },
+    { "extern", 0 },
+    { "float", 0 },
     { "for", 0 },
+    { "goto", 0 },
     { "if", 0 },
     { "int", 0 },
-    { "main", 0 },
+    { "long", 0 },
+    { "register", 0 },
     { "return", 0 },
+    { "short", 0 },
+    { "signed", 0 },
+    { "sizeof", 0 },
     { "static", 0 },
+    { "struct", 0 },
     { "switch", 0 },
+    { "typedef", 0 },
+    { "union", 0 },
+    { "unsigned", 0 },
     { "void", 0 },
+    { "volatile", 0 },
     { "while", 0 }
 };
 
-/* Constants */
+// Constants
 #define MAXWORD 100
 #define BUFSIZE 100
-#define NKEYS sizeof(struct key)
+#define NKEYS (sizeof(keytab) / sizeof(struct key))
 
-/* Function declarations */
+// Function declarations
 int getword(char *, int);
 int binsearch(char *, struct key *, int);
 int getch(void);
 void ungetch(int);
 
-/* Main program */
+// Main program
 int main()
 {
     int n;
@@ -56,9 +74,9 @@ int main()
     return 0;
 }
 
-/* Buffer management */
-char buf[BUFSIZE];    /* buffer for ungetch */
-int bufp = 0;         /* next free position in buf */
+// Buffer management
+char buf[BUFSIZE];    // buffer for ungetch
+int bufp = 0;         // next free position in buf
 
 int getch(void) {
     return (bufp > 0) ? buf[--bufp] : getchar();
@@ -71,7 +89,7 @@ void ungetch(int c) {
         buf[bufp++] = c;
 }
 
-/* Core word processing */
+// Core word processing
 int binsearch(char *word, struct key *tab, int n)
 {
     int low = 0;
@@ -91,32 +109,41 @@ int binsearch(char *word, struct key *tab, int n)
     return -1;
 }
 
+// Word search
 int getword(char *word, int lim)
 {
-    int c, getch(void);
-    void ungetch(int);
+    int c;
     char *w = word;
 
+    lim--; // Ensure we always have space for null terminator
+
+    // Skip whitespace
     while (isspace(c = getch()))
         ;
 
+    // Handle EOF
     if (c == EOF) {
         *w++ = c;
         *w = '\0';
         return c;
     }
 
+    // Handle string constants
     if (c == '"' || c == '\'') {
         int quote = c;
-        *w++ = c;
-        while ((c = getch()) != quote && c != EOF && --lim > 0)
+        if (lim > 0) { *w++ = c; lim--; }
+        while ((c = getch()) != quote && c != EOF && lim > 0) {
             *w++ = c;
-        if (c == quote)
+            lim--;
+        }
+        if (c == quote && lim > 0) {
             *w++ = c;
+        }
         *w = '\0';
         return word[0];
     }
 
+    // Handle comments
     if (c == '/') {
         if ((c = getch()) == '*') {
             while ((c = getch()) != EOF) {
@@ -126,37 +153,38 @@ int getword(char *word, int lim)
                     ungetch(c);
                 }
             }
-            return getword(word, lim);
+            return getword(word, lim + 1); // +1 to restore original limit
         } else if (c == '/') {
             while ((c = getch()) != '\n' && c != EOF)
                 ;
-            return getword(word, lim);
+            return getword(word, lim + 1); // +1 to restore original limit
         }
         ungetch(c);
         c = '/';
     }
 
+    // Handle preprocessor
     if (c == '#') {
         while ((c = getch()) != '\n' && c != EOF)
             ;
-        return getword(word, lim);
+        return getword(word, lim + 1);
     }
 
+    // Handle identifiers
     if (isalpha(c) || c == '_') {
-        *w++ = c;
-        while (--lim > 0) {
-            c = getch();
-            if (!isalnum(c) && c != '_') {
-                ungetch(c);
-                break;
-            }
+        if (lim > 0) { *w++ = c; lim--; }
+        while (lim > 0 && (c = getch(), isalnum(c) || c == '_')) {
             *w++ = c;
+            lim--;
         }
+        if (!isalnum(c) && c != '_')
+            ungetch(c);
         *w = '\0';
         return word[0];
     }
 
-    *w++ = c;
+    // Handle single character
+    if (lim > 0) { *w++ = c; }
     *w = '\0';
     return c;
 }
