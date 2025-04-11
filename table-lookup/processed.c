@@ -1,0 +1,1 @@
+00.14159intmax=1;floatpi=3;intmin=0;char*test=xyz;char*str="MAX MIN #define TEST foo";#defineSPACEhelloworldchar*space=SPACE;#defineINVALID123char*a=small;char*b=LARGE;112233intaa=1;intbb=2;intcc=3;intMAX_VALUE=200;char*MIN_str="hi";@#$%char*quote="hello";charapos='x';char*syms=!;char*eof=last;
